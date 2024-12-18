@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
-import { Heart, Home, LogOut, MessageCircle, PlusSquare, Search, TrendingUp } from 'lucide-react';
+import { Heart, Home, LogOut, MessageCircle, PlusSquare, Search } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
 import { Popover, PopoverContent, PopoverTrigger } from './ui/popover';
 import { Button } from './ui/button';
@@ -81,7 +81,7 @@ const LeftSidebar = () => {
                 className="flex items-center gap-3 relative hover:bg-gray-100 cursor-pointer rounded-lg p-3 my-3"
               >
                 {item.icon}
-                <span>{item.text}</span>
+                <span className="hidden lg:block">{item.text}</span>
                 {item.text === 'Notifications' && likeNotification.length > 0 && (
                   <Popover>
                     <PopoverTrigger asChild>
@@ -129,7 +129,8 @@ const LeftSidebar = () => {
             className="flex flex-col items-center justify-center cursor-pointer text-gray-700 hover:text-black"
           >
             {item.icon}
-            <span className="text-xs mt-1">{item.text}</span>
+            {/* Text hidden on smaller screens */}
+            <span className="hidden lg:block text-xs mt-1">{item.text}</span>
           </div>
         ))}
       </div>
