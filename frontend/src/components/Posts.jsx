@@ -38,8 +38,9 @@ const Posts = ({ posts }) => {
             post.media.endsWith('.mp4') || post.media.endsWith('.webm') || post.media.endsWith('.ogg') ? (
               <video
                 ref={(el) => (videoRefs.current[index] = el)} // Store reference
-                className={`rounded-sm my-2 w-full object-cover aspect-video : 'object-contain'
-                }`}
+                className={`rounded-sm my-2 w-full object-cover ${
+                  post.mediaWidth / post.mediaHeight > 16 / 9 ? 'aspect-video' : 'object-contain'
+                }`} 
                 preload="metadata"
                 src={post.media}
                 loop
