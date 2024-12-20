@@ -2,38 +2,49 @@ import { User } from "../models/user.model.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import getDataUri from "../utils/datauri.js";
-import cloudinary from "../utils/cloudinary.js";
-import { Post } from "../models/post.model.js";
+import cloudinary from "../utils/cloudinary.js"; // Ensure this is correctly configured and exported
+import { Post } from "../models/post.model.js"; // Ensure Post is exported properly from the file
+
 export const register = async (req, res) => {
     try {
         const { username, email, password } = req.body;
+
         if (!username || !email || !password) {
             return res.status(401).json({
                 message: "Something is missing, please check!",
                 success: false,
             });
         }
+
         const user = await User.findOne({ email });
+
         if (user) {
             return res.status(401).json({
                 message: "Try different email",
                 success: false,
             });
-        };
+        }
+
         const hashedPassword = await bcrypt.hash(password, 10);
+
         await User.create({
             username,
             email,
-            password: hashedPassword
+            password: hashedPassword,
         });
+
         return res.status(201).json({
             message: "Account created successfully.",
             success: true,
         });
     } catch (error) {
-        console.log(error);
+        console.error(error); // Use console.error for better error handling
+        return res.status(500).json({
+            message: "An internal error occurred.",
+            success: false,
+        });
     }
-}
+};
 export const login = async (req, res) => {
     try {
         const { email, password } = req.body;
