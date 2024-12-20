@@ -39,7 +39,7 @@ const CreatePost = ({ open, setOpen }) => {
     try {
       setLoading(true);
       console.log("FormData entries:", Array.from(formData.entries())); // Log FormData for debugging
-      const res = await axios.post('http://localhost:8000/api/v1/post/addpost', formData, {
+      const res = await axios.post('https://edu-gathering.onrender.com/api/v1/post/addpost', formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
         withCredentials: true,
       });
