@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader } from './ui/dialog';
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
 import { Textarea } from './ui/textarea';
@@ -11,6 +11,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { setPosts } from '@/redux/postSlice';
 
 const CreatePost = ({ open, setOpen }) => {
+  const dialogRef = useRef(null); // Ref for the dialog box
   const imageRef = useRef();
   const videoRef = useRef();
   const [file, setFile] = useState(null);
@@ -34,18 +35,17 @@ const CreatePost = ({ open, setOpen }) => {
     e.preventDefault();
     const formData = new FormData();
     formData.append("caption", caption);
-    if (file) formData.append("media", file); // Append the selected file to the form data
-  
+    if (file) formData.append("media", file);
+
     try {
       setLoading(true);
-      console.log("FormData entries:", Array.from(formData.entries())); // Log FormData for debugging
-      const res = await axios.post('https://edu-gathering.onrender.com/api/v1/post/addpost', formData, {
+      const res = await axios.post('http://localhost:8000/api/v1/post/addpost', formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
         withCredentials: true,
       });
-  
+
       if (res.data.success) {
-        dispatch(setPosts([res.data.post, ...posts])); // Add new post to the beginning of the posts array
+        dispatch(setPosts([res.data.post, ...posts]));
         toast.success(res.data.message);
         setOpen(false);
       }
@@ -56,11 +56,26 @@ const CreatePost = ({ open, setOpen }) => {
       setLoading(false);
     }
   };
-  
+
+  useEffect(() => {
+    const handleOutsideClick = (event) => {
+      if (dialogRef.current && !dialogRef.current.contains(event.target)) {
+        setOpen(false);
+      }
+    };
+
+    if (open) {
+      document.addEventListener('mousedown', handleOutsideClick);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleOutsideClick);
+    };
+  }, [open, setOpen]);
 
   return (
     <Dialog open={open} onClose={() => setOpen(false)}>
-      <DialogContent>
+      <DialogContent ref={dialogRef}>
         <DialogHeader className='text-center font-semibold'>Create New Post</DialogHeader>
         <div className='flex gap-3 items-center'>
           <Avatar>
@@ -101,6 +116,6 @@ const CreatePost = ({ open, setOpen }) => {
       </DialogContent>
     </Dialog>
   );
-}
+};
 
 export default CreatePost;
