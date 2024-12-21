@@ -106,8 +106,13 @@ const Profile = () => {
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mt-6">
           {displayedPost?.map((post) => (
             <div key={post?._id} className="relative group cursor-pointer">
-              <img
-                src={post.image}
+              <video
+                src={post.media}
+                alt="postimage"
+                className="rounded-lg w-full aspect-square object-cover"
+              />
+              <image
+                src={post.media}
                 alt="postimage"
                 className="rounded-lg w-full aspect-square object-cover"
               />
