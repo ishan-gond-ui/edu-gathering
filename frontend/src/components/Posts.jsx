@@ -13,7 +13,7 @@ import { Badge } from './ui/badge';
 
 const Posts = ({ posts }) => {
   const videoRefs = useRef([]);
-  const { user } = useSelector((store) => store.auth);
+  const { user } = useSelector((store) => store.auth); // Make sure `user` is valid
   const { posts: postStore } = useSelector((store) => store.post);
   const dispatch = useDispatch();
 
@@ -29,7 +29,7 @@ const Posts = ({ posts }) => {
           }
         });
       },
-      { threshold: 0.95 }
+      { threshold: 0.5 }
     );
 
     videoRefs.current.forEach((video) => {
@@ -69,7 +69,9 @@ const Posts = ({ posts }) => {
   return (
     <div className="my-8 w-full max-w-sm mx-auto">
       {posts.map((post, index) => {
-        const [liked, setLiked] = useState(post.likes.includes(user?._id) || false);
+        if (!post.author || !user) return <div key={post.id}>Error: Missing user or author data</div>;
+
+        const [liked, setLiked] = useState(post.likes.includes(user._id) || false);
         const [postLike, setPostLike] = useState(post.likes.length);
         const [comment, setComment] = useState(post.comments || []);
         const [text, setText] = useState('');
@@ -115,11 +117,11 @@ const Posts = ({ posts }) => {
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Avatar>
-                  <AvatarImage src={post.author?.profilePicture} alt="post_image" />
+                  <AvatarImage src={post.author.profilePicture} alt="post_image" />
                   <AvatarFallback>CN</AvatarFallback>
                 </Avatar>
                 <div className="flex items-center gap-3">
-                  <h1>{post.author?.username}</h1>
+                  <h1>{post.author.username}</h1>
                   {user?._id === post.author._id && <Badge variant="secondary">Author</Badge>}
                 </div>
               </div>
@@ -144,9 +146,7 @@ const Posts = ({ posts }) => {
               post.media.endsWith('.mp4') || post.media.endsWith('.webm') || post.media.endsWith('.ogg') ? (
                 <video
                   ref={(el) => (videoRefs.current[index] = el)}
-                  className={`rounded-sm my-2 w-full object-cover ${
-                    post.mediaWidth / post.mediaHeight > 16 / 9 ? 'aspect-video' : 'object-contain'
-                  }`}
+                  className={`rounded-sm my-2 w-full object-cover ${post.mediaWidth / post.mediaHeight > 16 / 9 ? 'aspect-video' : 'object-contain'}`}
                   preload="metadata"
                   src={post.media}
                   loop
@@ -192,7 +192,7 @@ const Posts = ({ posts }) => {
             </div>
             <span className="font-medium block mb-2">{postLike} likes</span>
             <p>
-              <span className="font-medium mr-2">{post.author?.username}</span>
+              <span className="font-medium mr-2">{post.author.username}</span>
               {post.caption}
             </p>
             {comment.length > 0 && (
