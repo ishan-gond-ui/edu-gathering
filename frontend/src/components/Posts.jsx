@@ -13,7 +13,7 @@ import { Badge } from './ui/badge';
 
 const Posts = ({ posts }) => {
   const videoRefs = useRef([]);
-  const { user } = useSelector((store) => store.auth); // Make sure `user` is valid
+  const { user } = useSelector((store) => store.auth);
   const { posts: postStore } = useSelector((store) => store.post);
   const dispatch = useDispatch();
 
@@ -113,7 +113,7 @@ const Posts = ({ posts }) => {
         };
 
         return (
-          <div key={post.id}>
+          <div key={post.id} className="mb-14"> {/* Add gap between posts */}
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Avatar>
