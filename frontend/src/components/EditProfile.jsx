@@ -3,7 +3,6 @@ import { useDispatch, useSelector } from 'react-redux';
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
 import { Button } from './ui/button';
 import { Textarea } from './ui/textarea';
-import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import axios from 'axios';
 import { Loader2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
@@ -17,7 +16,7 @@ const EditProfile = () => {
   const [input, setInput] = useState({
     profilePhoto: user?.profilePicture,
     bio: user?.bio,
-    gender: user?.gender,
+    gender: user?.gender, // State retained
   });
   const navigate = useNavigate();
   const dispatch = useDispatch();
@@ -27,20 +26,16 @@ const EditProfile = () => {
     if (file) setInput({ ...input, profilePhoto: file });
   };
 
-  const selectChangeHandler = (value) => {
-    setInput({ ...input, gender: value });
-  };
-
   const editProfileHandler = async () => {
     const formData = new FormData();
     formData.append('bio', input.bio);
-    formData.append('gender', input.gender);
+    formData.append('gender', input.gender); // Logic retained
     if (input.profilePhoto) {
       formData.append('profilePhoto', input.profilePhoto);
     }
     try {
       setLoading(true);
-      const res = await axios.post('https://edu-gathering.onrender.com/api/v1/user/profile/edit', formData, {
+      const res = await axios.post('http://localhost:8000/api/v1/user/profile/edit', formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
@@ -51,7 +46,7 @@ const EditProfile = () => {
           ...user,
           bio: res.data.user?.bio,
           profilePicture: res.data.user?.profilePicture,
-          gender: res.data.user.gender,
+          gender: res.data.user.gender, // Logic retained
         };
         dispatch(setAuthUser(updatedUserData));
         navigate(`/profile/${user?._id}`);
@@ -101,20 +96,6 @@ const EditProfile = () => {
             name="bio"
             className="focus-visible:ring-transparent"
           />
-        </div>
-        <div>
-          <h1 className="font-bold text-lg mb-2">Gender</h1>
-          <Select defaultValue={input.gender} onValueChange={selectChangeHandler}>
-            <SelectTrigger className="w-full">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectGroup>
-                <SelectItem value="male">Male</SelectItem>
-                <SelectItem value="female">Female</SelectItem>
-              </SelectGroup>
-            </SelectContent>
-          </Select>
         </div>
         <div className="flex justify-end">
           {loading ? (
