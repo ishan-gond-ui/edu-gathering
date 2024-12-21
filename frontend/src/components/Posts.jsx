@@ -29,7 +29,7 @@ const Posts = ({ posts }) => {
           }
         });
       },
-      { threshold: 0.6 }
+      { threshold: 0.8 }
     );
 
     videoRefs.current.forEach((video) => {
@@ -42,7 +42,7 @@ const Posts = ({ posts }) => {
   const handleLikeOrDislike = async (post, liked, postLike, setLiked, setPostLike) => {
     try {
       const action = liked ? 'dislike' : 'like';
-      const res = await axios.get(`http://localhost:8000/api/v1/post/${post._id}/${action}`, { withCredentials: true });
+      const res = await axios.get(`https://edu-gathering.onrender.com/api/v1/post/${post._id}/${action}`, { withCredentials: true });
       if (res.data.success) {
         const updatedLikes = liked ? postLike - 1 : postLike + 1;
         setPostLike(updatedLikes);
@@ -80,7 +80,7 @@ const Posts = ({ posts }) => {
         const handleComment = async () => {
           try {
             const res = await axios.post(
-              `http://localhost:8000/api/v1/post/${post._id}/comment`,
+              `https://edu-gathering.onrender.com/api/v1/post/${post._id}/comment`,
               { text },
               { headers: { 'Content-Type': 'application/json' }, withCredentials: true }
             );
@@ -103,7 +103,7 @@ const Posts = ({ posts }) => {
 
         const handleBookmark = async () => {
           try {
-            const res = await axios.get(`http://localhost:8000/api/v1/post/${post._id}/bookmark`, { withCredentials: true });
+            const res = await axios.get(`https://edu-gathering.onrender.com/api/v1/post/${post._id}/bookmark`, { withCredentials: true });
             if (res.data.success) {
               toast.success(res.data.message);
             }
