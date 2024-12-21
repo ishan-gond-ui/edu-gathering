@@ -42,7 +42,7 @@ const Posts = ({ posts }) => {
   const handleLikeOrDislike = async (post, liked, postLike, setLiked, setPostLike) => {
     try {
       const action = liked ? 'dislike' : 'like';
-      const res = await axios.get(`https://edu-gathering.onrender.com/api/v1/post/${post._id}/${action}`, { withCredentials: true });
+      const res = await axios.get(`http://localhost:8000/api/v1/post/${post._id}/${action}`, { withCredentials: true });
       if (res.data.success) {
         const updatedLikes = liked ? postLike - 1 : postLike + 1;
         setPostLike(updatedLikes);
@@ -66,6 +66,54 @@ const Posts = ({ posts }) => {
     }
   };
 
+  const handleComment = async (post, text, setText, setComment, comment) => {
+    try {
+      const res = await axios.post(
+        `http://localhost:8000/api/v1/post/${post._id}/comment`,
+        { text },
+        { headers: { 'Content-Type': 'application/json' }, withCredentials: true }
+      );
+      if (res.data.success) {
+        const updatedCommentData = [...comment, res.data.comment];
+        setComment(updatedCommentData);
+
+        const updatedPostData = postStore.map((p) =>
+          p._id === post._id ? { ...p, comments: updatedCommentData } : p
+        );
+        dispatch(setPosts(updatedPostData));
+        toast.success(res.data.message);
+        setText('');
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const handleBookmark = async (post) => {
+    try {
+      const res = await axios.get(`http://localhost:8000/api/v1/post/${post._id}/bookmark`, { withCredentials: true });
+      if (res.data.success) {
+        toast.success(res.data.message);
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const handleDeletePost = async (post) => {
+    try {
+      const res = await axios.delete(`http://localhost:8000/api/v1/post/delete/${post._id}`, { withCredentials: true });
+      if (res.data.success) {
+        const updatedPostData = postStore.filter((postItem) => postItem._id !== post._id);
+        dispatch(setPosts(updatedPostData));
+        toast.success(res.data.message);
+      }
+    } catch (error) {
+      console.error(error);
+      toast.error(error.response.data.message);
+    }
+  };
+
   return (
     <div className="my-8 w-full max-w-sm mx-auto">
       {posts.map((post, index) => {
@@ -77,43 +125,15 @@ const Posts = ({ posts }) => {
         const [text, setText] = useState('');
         const [open, setOpen] = useState(false);
 
-        const handleComment = async () => {
-          try {
-            const res = await axios.post(
-              `https://edu-gathering.onrender.com/api/v1/post/${post._id}/comment`,
-              { text },
-              { headers: { 'Content-Type': 'application/json' }, withCredentials: true }
-            );
-            if (res.data.success) {
-              const updatedCommentData = [...comment, res.data.comment];
-              setComment(updatedCommentData);
-
-              const updatedPostData = postStore.map((p) =>
-                p._id === post._id ? { ...p, comments: updatedCommentData } : p
-              );
-
-              dispatch(setPosts(updatedPostData));
-              toast.success(res.data.message);
-              setText('');
-            }
-          } catch (error) {
-            console.error(error);
-          }
-        };
-
-        const handleBookmark = async () => {
-          try {
-            const res = await axios.get(`https://edu-gathering.onrender.com/api/v1/post/${post._id}/bookmark`, { withCredentials: true });
-            if (res.data.success) {
-              toast.success(res.data.message);
-            }
-          } catch (error) {
-            console.error(error);
-          }
-        };
+        useEffect(() => {
+          // Initialize state based on the post data
+          setLiked(post.likes.includes(user._id) || false);
+          setPostLike(post.likes.length);
+          setComment(post.comments || []);
+        }, [post]);
 
         return (
-          <div key={post.id} className="mb-14"> {/* Add gap between posts */}
+          <div key={post.id} className="mb-14">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Avatar>
@@ -138,6 +158,15 @@ const Posts = ({ posts }) => {
                   <Button variant="ghost" className="cursor-pointer w-fit">
                     Add to favorites
                   </Button>
+                  {user && user._id === post.author._id && (
+                    <Button
+                      onClick={() => handleDeletePost(post)}
+                      variant="ghost"
+                      className="cursor-pointer w-fit"
+                    >
+                      Delete
+                    </Button>
+                  )}
                 </DialogContent>
               </Dialog>
             </div>
@@ -146,7 +175,9 @@ const Posts = ({ posts }) => {
               post.media.endsWith('.mp4') || post.media.endsWith('.webm') || post.media.endsWith('.ogg') ? (
                 <video
                   ref={(el) => (videoRefs.current[index] = el)}
-                  className={`rounded-sm my-2 w-full object-cover ${post.mediaWidth / post.mediaHeight > 16 / 9 ? 'aspect-video' : 'object-contain'}`}
+                  className={`rounded-sm my-2 w-full object-cover ${
+                    post.mediaWidth / post.mediaHeight > 16 / 9 ? 'aspect-video' : 'object-contain'
+                  }`}
                   preload="metadata"
                   src={post.media}
                   loop
@@ -154,11 +185,7 @@ const Posts = ({ posts }) => {
                   Your browser does not support the video tag.
                 </video>
               ) : (
-                <img
-                  className="rounded-sm my-2 w-full object-cover"
-                  src={post.media}
-                  alt="Post media"
-                />
+                <img className="rounded-sm my-2 w-full object-cover" src={post.media} alt="Post media" />
               )
             ) : (
               <p className="text-center text-gray-500">No media available</p>
@@ -188,7 +215,7 @@ const Posts = ({ posts }) => {
                 />
                 <Send className="cursor-pointer hover:text-gray-600" />
               </div>
-              <Bookmark onClick={handleBookmark} className="cursor-pointer hover:text-gray-600" />
+              <Bookmark onClick={() => handleBookmark(post)} className="cursor-pointer hover:text-gray-600" />
             </div>
             <span className="font-medium block mb-2">{postLike} likes</span>
             <p>
@@ -216,7 +243,10 @@ const Posts = ({ posts }) => {
                 className="outline-none text-sm w-full"
               />
               {text && (
-                <span onClick={handleComment} className="text-[#3BADF8] cursor-pointer">
+                <span
+                  onClick={() => handleComment(post, text, setText, setComment, comment)}
+                  className="text-[#3BADF8] cursor-pointer"
+                >
                   Post
                 </span>
               )}
