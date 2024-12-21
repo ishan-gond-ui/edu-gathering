@@ -29,7 +29,7 @@ const Posts = ({ posts }) => {
           }
         });
       },
-      { threshold: 0.9 }
+      { threshold: 0.8 }
     );
 
     videoRefs.current.forEach((video) => {
